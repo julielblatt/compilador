@@ -1,17 +1,16 @@
 import re
 
-# Definição dos tokens com suas expressões regulares
 token_specification = [
-    ('KEYWORD',   r'\b(if|while|return)\b'),   # Palavras-chave
-    ('ID',        r'\b[a-zA-Z_][a-zA-Z0-9_]*\b'),  # Identificadores
-    ('NUMBER',    r'\b\d+\b'),                 # Números inteiros
-    ('OP',        r'[+\-*/]'),                 # Operadores
-    ('SYMBOL',    r'[;(){}]'),                 # Símbolos
-    ('SKIP',      r'[ \t\n]+'),                # Espaços em branco e quebras de linha
-    ('MISMATCH',  r'.'),                       # Qualquer outro caractere
+    ('KEYWORD',   r'\b(if|while|return)\b'),  
+    ('ID',        r'\b[a-zA-Z_][a-zA-Z0-9_]*\b'),  
+    ('NUMBER',    r'\b\d+\b'),                
+    ('OP',        r'[+\-*/]'),                 
+    ('SYMBOL',    r'[;(){}]'),                 
+    ('SKIP',      r'[ \t\n]+'),               
+    ('MISMATCH',  r'.'),                       
 ]
 
-# Compilando em uma expressão regular única
+
 token_regex = '|'.join(f'(?P<{name}>{pattern})' for name, pattern in token_specification)
 
 def analisador_lexico(codigo_fonte):
