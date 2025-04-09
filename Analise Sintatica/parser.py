@@ -34,9 +34,9 @@ class Parser:
 
         if val == 'if':
             self.consumir('KEYWORD')
-            self.consumir('SYMBOL')  # (
+            self.consumir('SYMBOL')  
             cond = self.exp()
-            self.consumir('SYMBOL')  # )
+            self.consumir('SYMBOL') 
             bloco = self.bloco()
             return {'type': 'IF', 'cond': cond, 'body': bloco}
 
@@ -50,25 +50,25 @@ class Parser:
 
         elif val == 'for':
             self.consumir('KEYWORD')
-            self.consumir('SYMBOL')  # (
+            self.consumir('SYMBOL')  
             init = self.atribuicao()
-            self.consumir('SYMBOL')  # ;
+            self.consumir('SYMBOL')  
             cond = self.exp()
-            self.consumir('SYMBOL')  # ;
+            self.consumir('SYMBOL')  
             update = self.atribuicao()
-            self.consumir('SYMBOL')  # )
+            self.consumir('SYMBOL')  
             bloco = self.bloco()
             return {'type': 'FOR', 'init': init, 'cond': cond, 'update': update, 'body': bloco}
 
         elif val == 'return':
             self.consumir('KEYWORD')
             expr = self.exp()
-            self.consumir('SYMBOL')  # ;
+            self.consumir('SYMBOL')  
             return {'type': 'RETURN', 'value': expr}
 
         elif tipo == 'ID':
             atrib = self.atribuicao()
-            self.consumir('SYMBOL')  # ;
+            self.consumir('SYMBOL')  
             return {'type': 'ASSIGN', **atrib}
 
         else:
@@ -76,7 +76,7 @@ class Parser:
 
     def atribuicao(self):
         var = self.consumir('ID')
-        op = self.consumir('OP')  # espera "="
+        op = self.consumir('OP')  
         expr = self.exp()
         return {'var': var, 'op': op, 'value': expr}
 
@@ -113,7 +113,7 @@ class Parser:
             raise SyntaxError(f"Fator inválido: {val}")
 
     def bloco(self):
-        self.consumir('SYMBOL')  # {
+        self.consumir('SYMBOL')  
         comandos = self.cmd_list()
-        self.consumir('SYMBOL')  # }
+        self.consumir('SYMBOL') 
         return comandos
