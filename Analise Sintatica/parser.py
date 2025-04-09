@@ -1,3 +1,4 @@
+import json
 from analisador_lexico import analisador_lexico
 
 class Parser:
@@ -18,79 +19,101 @@ class Parser:
         raise SyntaxError(f"Esperado {tipo_esperado}, encontrado {tipo} ({valor})")
 
     def parse(self):
-        self.cmd_list()
-        print("Análise sintática concluída com sucesso!")
+        ast = self.cmd_list()
+        print(json.dumps(ast, indent=2))
+        return ast
 
     def cmd_list(self):
+        comandos = []
         while self.token_atual()[0] in ['KEYWORD', 'ID']:
-            self.cmd()
+            comandos.append(self.cmd())
+        return {'type': 'CMD_LIST', 'body': comandos}
 
     def cmd(self):
         tipo, val = self.token_atual()
 
         if val == 'if':
-            self.consumir('KEYWORD')  # if
-            self.consumir('SYMBOL')   # (
-            self.exp()
-            self.consumir('SYMBOL')   # )
-            self.bloco()
+            self.consumir('KEYWORD')
+            self.consumir('SYMBOL')  # (
+            cond = self.exp()
+            self.consumir('SYMBOL')  # )
+            bloco = self.bloco()
+            return {'type': 'IF', 'cond': cond, 'body': bloco}
+
         elif val == 'while':
             self.consumir('KEYWORD')
             self.consumir('SYMBOL')
-            self.exp()
+            cond = self.exp()
             self.consumir('SYMBOL')
-            self.bloco()
+            bloco = self.bloco()
+            return {'type': 'WHILE', 'cond': cond, 'body': bloco}
+
         elif val == 'for':
             self.consumir('KEYWORD')
             self.consumir('SYMBOL')  # (
-            self.atribuicao()
+            init = self.atribuicao()
             self.consumir('SYMBOL')  # ;
-            self.exp()
+            cond = self.exp()
             self.consumir('SYMBOL')  # ;
-            self.atribuicao()
+            update = self.atribuicao()
             self.consumir('SYMBOL')  # )
-            self.bloco()
+            bloco = self.bloco()
+            return {'type': 'FOR', 'init': init, 'cond': cond, 'update': update, 'body': bloco}
+
         elif val == 'return':
             self.consumir('KEYWORD')
-            self.exp()
+            expr = self.exp()
             self.consumir('SYMBOL')  # ;
+            return {'type': 'RETURN', 'value': expr}
+
         elif tipo == 'ID':
-            self.atribuicao()
+            atrib = self.atribuicao()
             self.consumir('SYMBOL')  # ;
+            return {'type': 'ASSIGN', **atrib}
+
         else:
             raise SyntaxError(f"Comando inválido: {val}")
 
     def atribuicao(self):
-        self.consumir('ID')
-        self.consumir('OP')  # espera "="
-        self.exp()
+        var = self.consumir('ID')
+        op = self.consumir('OP')  # espera "="
+        expr = self.exp()
+        return {'var': var, 'op': op, 'value': expr}
 
     def exp(self):
-        self.term()
+        node = self.term()
         while self.token_atual()[1] in ['+', '-']:
-            self.consumir('OP')
-            self.term()
+            op = self.consumir('OP')
+            right = self.term()
+            node = {'type': 'BIN_OP', 'op': op, 'left': node, 'right': right}
+        return node
 
     def term(self):
-        self.factor()
+        node = self.factor()
         while self.token_atual()[1] in ['*', '/']:
-            self.consumir('OP')
-            self.factor()
+            op = self.consumir('OP')
+            right = self.factor()
+            node = {'type': 'BIN_OP', 'op': op, 'left': node, 'right': right}
+        return node
 
     def factor(self):
         tipo, val = self.token_atual()
         if tipo == 'NUMBER':
             self.consumir('NUMBER')
+            return {'type': 'NUMBER', 'value': int(val)}
         elif tipo == 'ID':
             self.consumir('ID')
+            return {'type': 'ID', 'name': val}
         elif val == '(':
             self.consumir('SYMBOL')
-            self.exp()
+            expr = self.exp()
             self.consumir('SYMBOL')
+            return expr
         else:
             raise SyntaxError(f"Fator inválido: {val}")
 
     def bloco(self):
         self.consumir('SYMBOL')  # {
-        self.cmd_list()
+        comandos = self.cmd_list()
         self.consumir('SYMBOL')  # }
+        return comandos
