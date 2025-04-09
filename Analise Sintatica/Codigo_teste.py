@@ -1,3 +1,29 @@
+from analisador_lexico import analisador_lexico
+from parser import Parser
+
+codigo = """
+if (x + 2) {
+    return x;
+}
+y = 5;
+return y + 1;
+"""
+
+
+
+tokens = analisador_lexico(codigo)
+print("TOKENS:")
+for tok in tokens:
+    print(tok)
+parser = Parser(tokens)
+parser.parse()
+
+
+
+
+
+
+
 // PRIMEIRO CODIGO
 
 if (x + 2) {
